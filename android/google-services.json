@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "660164040830",
+    "project_id": "test-admin-f6680",
+    "storage_bucket": "test-admin-f6680.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:660164040830:android:77000586b94715f569602f",
+        "android_client_info": {
+          "package_name": "com.testadminapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "660164040830-qt07k49uf7rhmg194viseaknf35horsb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA43Nn6PLGK2ppDaIXNEPWHp9vaSRX3_cE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "660164040830-qt07k49uf7rhmg194viseaknf35horsb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
