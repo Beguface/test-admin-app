@@ -10,50 +10,59 @@ import React, {useEffect, useState} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
-  ScrollView,
   View,
   Text,
+  Button,
   StatusBar,
 } from 'react-native';
 
-import {Header, Colors} from 'react-native/Libraries/NewAppScreen';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
+
+import dynamicLinks from '@react-native-firebase/dynamic-links';
 
 const App: () => React$Node = () => {
-  const [users, setUsers] = useState([]);
-  useEffect(() => {
-    const getUsers = async () => {
-      try {
-        let response = await fetch('https://electricbirdcage.com/api/users');
-        let {data} = await response.json();
-        setUsers(data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
+  const [user, setUser] = useState('No one :(');
 
-    getUsers();
+  //  firebase dynamic linking listener
+  useEffect(() => {
+    dynamicLinks()
+      .getInitialLink()
+      .then((link) => {
+        handleDynamicLink(link);
+      });
+    const linkingListener = dynamicLinks().onLink(handleDynamicLink);
+    return () => {
+      linkingListener();
+    };
   }, []);
+
+  function handleDynamicLink(link) {
+    if (link) {
+      const name = link.url.replace('https://electricbirdcage.com/', '');
+      setUser(name);
+    }
+  }
+
   return (
     <>
       <StatusBar barStyle="dark-content" />
       <SafeAreaView>
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={styles.scrollView}>
-          <Header />
+        <View style={styles.scrollView}>
           {global.HermesInternal == null ? null : (
             <View style={styles.engine}>
               <Text style={styles.footer}>Engine: Hermes</Text>
             </View>
           )}
           <View style={styles.body}>
-            {users.map(({name, _id}) => (
-              <View key={_id} style={styles.sectionContainer}>
-                <Text style={styles.sectionTitle}>{name}</Text>
-              </View>
-            ))}
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>This page is for:</Text>
+              <Text style={styles.sectionName}>{user}</Text>
+            </View>
+            <View style={styles.buttonContainer}>
+              <Button title="SEND NOTIFICATION" />
+            </View>
           </View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
     </>
   );
@@ -74,27 +83,21 @@ const styles = StyleSheet.create({
     marginTop: 32,
     paddingHorizontal: 24,
   },
+  buttonContainer: {
+    marginTop: 32,
+    paddingHorizontal: 36,
+  },
   sectionTitle: {
+    textAlign: 'center',
     fontSize: 24,
     fontWeight: '600',
     color: Colors.black,
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
-  highlight: {
+  sectionName: {
+    textAlign: 'center',
+    fontSize: 24,
     fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
+    color: Colors.black,
   },
 });
 
