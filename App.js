@@ -25,6 +25,7 @@ import messaging from '@react-native-firebase/messaging';
 
 const App: () => React$Node = () => {
   const [user, setUser] = useState('No one :(');
+  const [token, setToken] = useState(null);
 
   messaging().setBackgroundMessageHandler(async (remoteMessage) => {
     console.log('Message handled in the background!', remoteMessage);
@@ -36,6 +37,23 @@ const App: () => React$Node = () => {
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
     if (enabled) {
+      getFcmToken();
+      if (token) {
+        try {
+          await fetch('https://test-admin-frontend.vercel.app/api', {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              token,
+            }),
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      }
       console.log('Authorization status:', authStatus);
     }
   };
@@ -43,9 +61,7 @@ const App: () => React$Node = () => {
   const getFcmToken = async () => {
     const fcmToken = await messaging().getToken();
     if (fcmToken) {
-      console.log('Your Firebase Token is:', fcmToken);
-    } else {
-      console.log('Failed', 'No token received');
+      setToken(fcmToken);
     }
   };
 
@@ -53,7 +69,11 @@ const App: () => React$Node = () => {
   useEffect(() => {
     requestUserPermission();
     const unsubscribe = messaging().onMessage(async (remoteMessage) => {
-      Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
+      console.log(remoteMessage.notification.body);
+      const {
+        notification: {body},
+      } = remoteMessage;
+      Alert.alert('A new message arrived!', body);
     });
     return unsubscribe;
   });
@@ -71,12 +91,39 @@ const App: () => React$Node = () => {
     };
   }, []);
 
-  function handleDynamicLink(link) {
+  //handles
+
+  const handleDynamicLink = (link) => {
     if (link) {
-      const name = link.url.replace('https://electricbirdcage.com/', '');
+      const name = link.url.replace(
+        'https://test-admin-frontend.vercel.app/',
+        '',
+      );
       setUser(name);
     }
-  }
+  };
+
+  const handleSendNotification = async () => {
+    if (user !== 'No one :(') {
+      try {
+        await fetch(
+          'https://test-admin-frontend.vercel.app/api/users/notifications',
+          {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              user,
+            }),
+          },
+        );
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
 
   return (
     <>
@@ -94,7 +141,11 @@ const App: () => React$Node = () => {
               <Text style={styles.sectionName}>{user}</Text>
             </View>
             <View style={styles.buttonContainer}>
-              <Button title="SEND NOTIFICATION" />
+              <Button
+                title="SEND NOTIFICATION"
+                disabled={user === 'No one :('}
+                onPress={handleSendNotification}
+              />
             </View>
           </View>
         </View>
@@ -113,6 +164,8 @@ const styles = StyleSheet.create({
   },
   body: {
     backgroundColor: Colors.white,
+    flexDirection: 'column',
+    justifyContent: 'center',
   },
   sectionContainer: {
     marginTop: 32,
